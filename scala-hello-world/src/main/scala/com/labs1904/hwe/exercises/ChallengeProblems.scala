@@ -7,6 +7,7 @@ object ChallengeProblems {
     Params - String
     Returns - String
   */
+  def sameString(in: String) = {in}
 
 
   /*
