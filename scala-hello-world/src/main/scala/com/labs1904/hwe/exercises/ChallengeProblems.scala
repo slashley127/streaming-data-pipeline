@@ -48,6 +48,7 @@ def helloWorld() = {
 */
   def upper(input: List[String]): List[String]={
     input.map(input => input.toUpperCase())
+    //other syntax: input.map(_.toUpperCase())
   }
 
   /*
@@ -66,6 +67,7 @@ def helloWorld() = {
  */
   def containsCar(input: List[String]): List[String]={
     input.filter(_.contains("car"))
+    //other syntax: input.filter(input => input.contains("car"))
   }
 
   /*
@@ -74,12 +76,14 @@ def helloWorld() = {
     Returns - Int
    */
   def sumList(input: List[Int]): Int={
-    var sum = 0
-    for (x <- input){
-      sum += x
+    if(input.isEmpty){
+    0
+    } else {
+      input.head + sumList(input.tail)
     }
-    sum
   }
+  //.head returns first in a list, .tail returns last in a list
+  //list is immutable, new list called when tail is called
 
   /*
   9. Write a function that takes in an integer with a cats age, and return the human age equivalent.
