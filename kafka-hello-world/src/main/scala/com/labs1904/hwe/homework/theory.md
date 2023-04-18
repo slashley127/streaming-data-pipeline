@@ -23,17 +23,29 @@ reword confusing descriptions in a way that makes sense to you.
 * It's where data can be stored, logged and protected from loss. 
 * Credit card companies can alert customers of possibly fraudulent charges in real time. 
 * It also able to handle very large amounts of data. 
-
+* 
+* Handles streaming data between multiple apps, data store, way of moving data between systems, data integration tool
+* Usually only temporarily a data store (typically a retention time -- high enough to have time to consume it, low enough that you eat up space)
+* 
 #### What is Kafka?
 * Helpful resource: [Kafka in 6 minutes](https://youtu.be/Ch5VhJzaoaI) 
 * Kafka is a data 
 
+* see notes above
+
 #### Describe each of the following with an example of how they all fit together: 
- * Topic - category used to organize messages
- * Producer - the ones collecting the data
- * Consumer - the ones accessing the data
- * Broker - a server running Kafka. Each broker holds a replication?
+ * Topic - category used to organize messages -- stream of data
+ * -- should be strategically partitioned because it will affect how Spark is setup
+ * Producer - the ones collecting the data -- whatever is writing data to your topic
+ * Consumer - the ones accessing the data -- reading from the topic
+ * -- Spark would technically be a consumer of Kafka because it handles what happens to the data next
+ * Broker - a server running Kafka in a cluster -- interchangable with node/machine, each replica is on different nodes (want to be able to tolerate nodes failing)
  * Partition - topics are broken into multiple partitions. Each is a stream of data and broken up into offsets
+ * -- topics broken into many partitions across nodes
+ * -- typically one main partition per topic where the data is written then is copied to the others
+ * -- example of newspaper - probably a good idea to have small amount of partitions because not that many events, want to be able to easily sift through data
+ * -- example of somewhere that has a lot of events, probably good idea to have a lot of partitions
+ * 
 
 #### Describe Kafka Producers and Consumers
 * Producers are the ones collecting the data for consumers to access via the Kafka cluster
@@ -42,6 +54,8 @@ reword confusing descriptions in a way that makes sense to you.
 #### How are consumers and consumer groups different in Kafka? 
 * Helpful resource: [Consumers](https://youtu.be/lAdG16KaHLs)
 * Helpful resource: [Confluent Consumer Overview](https://youtu.be/Z9g4jMQwog0)
+*
+* consumer groups - coordinated readers across many tasks
 
 #### How are Kafka offsets different than partitions? 
 * Each partition is broken up into offsets which are the individual IDs given to each message within the partition?
@@ -56,3 +70,10 @@ reword confusing descriptions in a way that makes sense to you.
 * Helpful resource [Brokers and Replication factors](https://youtu.be/ZOU7PJWZU9w)
 
 #### What was the most fascinating aspect of Kafka to you while learning? 
+
+* Example - stream of tweets
+* Really large Kafka cluster with maybe 1000 partitions -- want data distributed mostly evenly between partitions
+  * What is used to determine which partition it goes to? -- something that is meaningful to downstream consumers
+  * Probably seeing tweets from one person in order - maybe hash based on twt handle, twts from one user will always go to the same partition
+  * looking for even distribution while also being organized for downstream consumers
+
