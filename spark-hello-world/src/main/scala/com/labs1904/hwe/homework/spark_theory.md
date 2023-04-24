@@ -21,26 +21,45 @@ reword confusing descriptions in a way that makes sense to you.
 #### What problem does Spark help solve? Use a specific use case in your answer 
 * Helpful resource: [Apache Spark Use Cases](https://www.toptal.com/spark/introduction-to-apache-spark)
 * [Overivew of Apache Spark](https://www.youtube.com/watch?v=znBa13Earms&t=42s)
+* runs code across cluster of servers (distributed computing) while tolerating faults (accounting for servers going down, etc)
+
 
 #### What is Apache Spark?
 * Helpful resource: [Spark Overview](https://www.youtube.com/watch?v=ymtq8yjmD9I) 
 
 #### What is distributed data processing? How does it relate to Apache Spark?  
 [Apache Spark for Beginners](https://medium.com/@aristo_alex/apache-spark-for-beginners-d3b3791e259e)
+* work is distributed throughout cluster for more efficient processing
 
 #### On the physical side of a spark cluster, you have a driver and executors. Define each and give an example of how they work together to process data
+* Driver - The main node that distributes "work" to other nodes
+  * Will communicate with cluster manager to do so
+  * builds foundation for app to run
+  * Does not actually do any calculations
+* Executors
+  * run the tasks and return results to driver node
+  * Can have multiple executors per node
 
 #### Define each and explain how they are different from each other 
 * RDD (Resilient Distributed Dataset)
+  * Spark will send data across the cluster for you when using RDD
+  * Can be useful if data doesn't have a well-defined schema
 * DataFrame
+  * columns and rows
+  * Has schemas
 * DataSet
+  * 
 
 #### What is a spark transformation?
 [Spark By Examples-Transformations](https://sparkbyexamples.com/apache-spark-rdd/spark-rdd-transformations/)
+* Applies a function and returns a new dataset/dataframe/RDD
+* Will not be applied until an action performed
 
 #### What is a spark action? How do actions differ from transformations? 
+* applies a function to the data but doesn't change it, returns something other than dataset/dataframe/RDD (could be nothing)
 
 #### What is a partition in spark? Why would you ever need to repartition? 
 [Spark Partitioning](https://sparkbyexamples.com/spark/spark-repartition-vs-coalesce/)
+* Describe how input data is split up
 
 #### What was the most fascinating aspect of Spark to you while learning? 
