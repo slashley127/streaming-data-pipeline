@@ -17,9 +17,9 @@ object WordCountStreamingApp {
   val jobName = "WordCountStreamingApp"
   // TODO: define the schema for parsing data from Kafka
 
-  val bootstrapServer : String = "CHANGEME"
-  val username: String = "CHANGEME"
-  val password: String = "CHANGEME"
+  val bootstrapServer : String = "CHANGE ME"
+  val username: String = "CHANGE ME"
+  val password: String = "CHANGE ME"
   val Topic: String = "word-count"
 
   //Use this for Windows
@@ -62,7 +62,7 @@ object WordCountStreamingApp {
       //val counts = ???
 
       val query = sentences.writeStream
-        .outputMode(OutputMode.Append())
+        .outputMode(OutputMode.Append()) //change append to Complete if error
         .format("console")
         .trigger(Trigger.ProcessingTime("5 seconds"))
         .start()
