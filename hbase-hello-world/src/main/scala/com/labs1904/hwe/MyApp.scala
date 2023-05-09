@@ -16,10 +16,16 @@ object MyApp {
       conf.set("hbase.zookeeper.quorum", "CHANGE ME")
       connection = ConnectionFactory.createConnection(conf)
       // Example code... change me
-      val table = connection.getTable(TableName.valueOf("table-name"))
-      val get = new Get(Bytes.toBytes("row-key"))
+      val table = connection.getTable(TableName.valueOf(("slashley:users")))
+      val get = new Get(Bytes.toBytes("10000001"))
+      get.addColumn(Bytes.toBytes("f1"), Bytes.toBytes("mail"))
       val result = table.get(get)
-      logger.debug(result)
+      val mail =
+        Bytes.toString(
+          result.getValue(Bytes.toBytes("f1"), Bytes.toBytes("mail")))
+
+
+      logger.debug(mail) //logger
     } catch {
       case e: Exception => logger.error("Error in main", e)
     } finally {
