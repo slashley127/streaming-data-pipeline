@@ -24,6 +24,18 @@ object StreamingPipeline {
   //Use this for Mac
   //val trustStore: String = "src/main/resources/kafka.client.truststore.jks"
 
+  case class Review(
+                     marketplace:String,
+                     customer_id:String,
+                     review_id:String,
+                     product_id:String,
+                     product_parent:String,
+                     product_title:String,
+                     product_category:String,
+                     star_rating:String,
+                   )
+
+
   def main(args: Array[String]): Unit = {
     try {
       val spark = SparkSession.builder()
