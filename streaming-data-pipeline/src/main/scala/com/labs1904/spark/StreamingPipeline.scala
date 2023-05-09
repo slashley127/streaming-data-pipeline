@@ -14,10 +14,10 @@ object StreamingPipeline {
   val jobName = "StreamingPipeline"
 
   val hdfsUrl = "CHANGEME"
-  val bootstrapServers = "CHANGEME"
-  val username = "CHANGEME"
-  val password = "CHANGEME"
-  val hdfsUsername = "CHANGEME" // TODO: set this to your handle
+  val bootstrapServers = "CHANGE ME"
+  val username = "CHANGE ME"
+  val password = "CHANGE ME"
+  val hdfsUsername = "slashley" // TODO: set this to your handle
 
   //Use this for Windows
   val trustStore: String = "src\\main\\resources\\kafka.client.truststore.jks"
