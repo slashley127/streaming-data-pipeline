@@ -1,5 +1,7 @@
 package com.labs1904.spark
 
+import org.apache.hadoop.hbase.client.Get
+import org.apache.kafka.common.serialization.Serdes.Bytes
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.streaming.{OutputMode, Trigger}
@@ -72,6 +74,23 @@ object StreamingPipeline {
       //val get = new Get(Bytes.toBytes("rowkey") -- (get object for rowkey)
       //val result = table.get(get) -- (returns result object)
       //analyze result object
+      //convert ds to Review case class
+
+      val rawReviews = ds.map(x => {
+        val split = x.split("\\t")
+        val marketplace = split(0)
+        val customer_id = split(1)
+        val review_id = split(2)
+        val product_id = split(3)
+        val product_parent = split(4)
+        val product_title = split(5)
+        val product_category = split(6)
+        Review(marketplace, customer_id...)
+      })
+
+      //map rawReviews to turn into hbase gets
+
+      val get = new Get (Bytes.toBytes(Review))
 
 
       // TODO: implement logic here
