@@ -69,7 +69,9 @@ object StreamingPipeline {
         .selectExpr("CAST(value AS STRING)").as[String]
 
       //construct hbase get request for every review message (customer_id corresponds to hbase rowkey)
-
+      //val get = new Get(Bytes.toBytes("rowkey") -- (get object for rowkey)
+      //val result = table.get(get) -- (returns result object)
+      //analyze result object
 
 
       // TODO: implement logic here
