@@ -33,6 +33,13 @@ object StreamingPipeline {
                      product_title:String,
                      product_category:String,
                      star_rating:String,
+                     helpful_votes:String,
+                     total_votes:String,
+                     vine:String,
+                     verified_purchase:String,
+                     review_headline:String,
+                     review_body:String,
+                     review_date:String
                    )
 
 
@@ -60,6 +67,10 @@ object StreamingPipeline {
         .option("kafka.sasl.jaas.config", getScramAuthString(username, password))
         .load()
         .selectExpr("CAST(value AS STRING)").as[String]
+
+      //construct hbase get request for every review message (customer_id corresponds to hbase rowkey)
+
+
 
       // TODO: implement logic here
       val result = ds
