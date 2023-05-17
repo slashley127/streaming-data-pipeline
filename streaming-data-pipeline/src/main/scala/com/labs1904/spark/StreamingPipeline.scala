@@ -74,9 +74,9 @@ object StreamingPipeline {
       //val get = new Get(Bytes.toBytes("rowkey") -- (get object for rowkey)
       //val result = table.get(get) -- (returns result object)
       //analyze result object
-      //convert ds to Review case class
 
-      val rawReviews = ds.map(x => {
+
+      val rawReviews = ds.map(x => {   //making data set an instance of the case class
         val split = x.split("\\t")
         val marketplace = split(0)
         val customer_id = split(1)
@@ -85,12 +85,28 @@ object StreamingPipeline {
         val product_parent = split(4)
         val product_title = split(5)
         val product_category = split(6)
-        Review(marketplace, customer_id...)
+        val star_rating = split(7)
+        val helpful_votes = split(8)
+        val total_votes = split(9)
+        val vine = split(10)
+        val verified_purchase= split(11)
+        val review_headline = split(12)
+        val review_body= split(13)
+        val review_date = split(14)
+        Review(marketplace, customer_id, review_id, product_id, product_parent,product_title, product_category, star_rating,
+          helpful_votes, total_votes, vine, verified_purchase, review_headline, review_body, review_date)
       })
 
       //map rawReviews to turn into hbase gets
 
-      val get = new Get (Bytes.toBytes(Review))
+      val reviewGets = rawReviews.map(x => {
+        new Get(Bytes.toBytes())
+      })
+      //row-key will be customer_id
+
+      //val get = new Get(Bytes.toBytes(rawReviews)
+      //val get = new Get(Bytes.toBytes("row-key"))
+      //val new_collection = collection.map(x => x * x )
 
 
       // TODO: implement logic here
