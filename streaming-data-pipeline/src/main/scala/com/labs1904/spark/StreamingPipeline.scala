@@ -2,7 +2,8 @@ package com.labs1904.spark
 
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client.{ConnectionFactory, Get}
-import org.apache.kafka.common.serialization.Serdes.Bytes
+//import org.apache.kafka.common.serialization.Serdes.Bytes
+import org.apache.hadoop.hbase.util.Bytes
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.streaming.{OutputMode, Trigger}
@@ -12,6 +13,26 @@ import org.apache.spark.sql.streaming.{OutputMode, Trigger}
  * Spark Structured Streaming app
  *
  */
+
+case class Review(
+                   marketplace: String,
+                   customer_id: String,
+                   review_id: String,
+                   product_id: String,
+                   product_parent: String,
+                   product_title: String,
+                   product_category: String,
+                   star_rating: String,
+                   helpful_votes: String,
+                   total_votes: String,
+                   vine: String,
+                   verified_purchase: String,
+                   review_headline: String,
+                   review_body: String,
+                   review_date: String
+                 )
+
+
 object StreamingPipeline {
   lazy val logger: Logger = Logger.getLogger(this.getClass)
   val jobName = "StreamingPipeline"
@@ -26,24 +47,6 @@ object StreamingPipeline {
   val trustStore: String = "src\\main\\resources\\kafka.client.truststore.jks"
   //Use this for Mac
   //val trustStore: String = "src/main/resources/kafka.client.truststore.jks"
-
-  case class Review(
-                     marketplace:String,
-                     customer_id:String,
-                     review_id:String,
-                     product_id:String,
-                     product_parent:String,
-                     product_title:String,
-                     product_category:String,
-                     star_rating:String,
-                     helpful_votes:String,
-                     total_votes:String,
-                     vine:String,
-                     verified_purchase:String,
-                     review_headline:String,
-                     review_body:String,
-                     review_date:String
-                   )
 
 
   def main(args: Array[String]): Unit = {
@@ -73,12 +76,7 @@ object StreamingPipeline {
         .load()
         .selectExpr("CAST(value AS STRING)").as[String]
 
-      //construct hbase get request for every review message (customer_id corresponds to hbase rowkey)
-      //val get = new Get(Bytes.toBytes("rowkey") -- (get object for rowkey)
-      //val result = table.get(get) -- (returns result object)
-      //analyze result object
-
-
+      //splitting reviews (tab separated in raw) to Review case class
       val rawReviews = ds.map(reviewCategory => { //making data set an instance of the case class
         val reviewSplit = reviewCategory.split("\\t")
         val marketplace = reviewSplit(0)
@@ -104,21 +102,23 @@ object StreamingPipeline {
 
       val customers = rawReviews.mapPartitions(partition => {
 
+        //HBase connection
         val conf = HBaseConfiguration.create()
         conf.set("hbase.zookeeper.quorum", "cdh01.hourswith.expert:2181,cdh02.hourswith.expert:2181,cdh03.hourswith.expert:20181")
         val connection = ConnectionFactory.createConnection(conf)
         val table = connection.getTable(TableName.valueOf("slashley:users"))
 
-        val iter = partition.map(id => {
-          val get = new Get(id).addFamily("f1")
+        //mapping customer_id (rowkey) to create 'gets' to retrieve customer info from HBase
+        val reviewsIteration = partition.map(review => {
+          val get = new Get(Bytes.toBytes(review.customer_id)).addFamily(Bytes.toBytes("f1"))
           val result = table.get(get)
 
-        (id, Bytes.toString(result.getValue("f1", "mail")))
+          (Bytes.toBytes(review.customer_id), Bytes.toString(result.getValue(Bytes.toBytes("f1"), Bytes.toBytes("mail"))))
       }).toList.iterator
 
       connection.close()
 
-      iter
+      reviewsIteration
     })
 
       // Write output to console
@@ -129,7 +129,7 @@ object StreamingPipeline {
         .trigger(Trigger.ProcessingTime("5 seconds"))
         .start()
 
-      // Write output to HDFS
+      //Write output to HDFS
 //      val query = result.writeStream
 //        .outputMode(OutputMode.Append())
 //        .format("json")
