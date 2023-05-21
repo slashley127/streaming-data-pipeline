@@ -1,6 +1,7 @@
 package com.labs1904.spark
 
-import org.apache.hadoop.hbase.client.Get
+import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
+import org.apache.hadoop.hbase.client.{ConnectionFactory, Get}
 import org.apache.kafka.common.serialization.Serdes.Bytes
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SparkSession
@@ -15,7 +16,7 @@ object StreamingPipeline {
   lazy val logger: Logger = Logger.getLogger(this.getClass)
   val jobName = "StreamingPipeline"
 
-  val hdfsUrl = "CHANGEME"
+  val hdfsUrl = "CHANGE ME"
   val bootstrapServers = "CHANGE ME"
   val username = "CHANGE ME"
   val password = "CHANGE ME"
@@ -49,6 +50,8 @@ object StreamingPipeline {
     try {
       val spark = SparkSession.builder()
         .config("spark.sql.shuffle.partitions", "3")
+        .config("spark.hadoop.dfs.client.use.datanode.hostname", "true")
+        .config("spark.hadoop.fs.defaultFS", hdfsUrl)
         .appName(jobName)
         .master("local[*]")
         .getOrCreate()
@@ -62,7 +65,7 @@ object StreamingPipeline {
         .option("subscribe", "reviews")
         .option("startingOffsets", "earliest")
         .option("maxOffsetsPerTrigger", "20")
-        .option("startingOffsets","earliest")
+        .option("startingOffsets", "earliest")
         .option("kafka.security.protocol", "SASL_SSL")
         .option("kafka.sasl.mechanism", "SCRAM-SHA-512")
         .option("kafka.ssl.truststore.location", trustStore)
@@ -76,44 +79,50 @@ object StreamingPipeline {
       //analyze result object
 
 
-      val rawReviews = ds.map(x => {   //making data set an instance of the case class
-        val split = x.split("\\t")
-        val marketplace = split(0)
-        val customer_id = split(1)
-        val review_id = split(2)
-        val product_id = split(3)
-        val product_parent = split(4)
-        val product_title = split(5)
-        val product_category = split(6)
-        val star_rating = split(7)
-        val helpful_votes = split(8)
-        val total_votes = split(9)
-        val vine = split(10)
-        val verified_purchase= split(11)
-        val review_headline = split(12)
-        val review_body= split(13)
-        val review_date = split(14)
-        Review(marketplace, customer_id, review_id, product_id, product_parent,product_title, product_category, star_rating,
+      val rawReviews = ds.map(reviewCategory => { //making data set an instance of the case class
+        val reviewSplit = reviewCategory.split("\\t")
+        val marketplace = reviewSplit(0)
+        val customer_id = reviewSplit(1)
+        val review_id = reviewSplit(2)
+        val product_id = reviewSplit(3)
+        val product_parent = reviewSplit(4)
+        val product_title = reviewSplit(5)
+        val product_category = reviewSplit(6)
+        val star_rating = reviewSplit(7)
+        val helpful_votes = reviewSplit(8)
+        val total_votes = reviewSplit(9)
+        val vine = reviewSplit(10)
+        val verified_purchase = reviewSplit(11)
+        val review_headline = reviewSplit(12)
+        val review_body = reviewSplit(13)
+        val review_date = reviewSplit(14)
+        Review(marketplace, customer_id, review_id, product_id, product_parent, product_title, product_category, star_rating,
           helpful_votes, total_votes, vine, verified_purchase, review_headline, review_body, review_date)
       })
 
-      //map rawReviews to turn into hbase gets
-
-      val reviewGets = rawReviews.map(x => {
-        new Get(Bytes.toBytes())
-      })
-      //row-key will be customer_id
-
-      //val get = new Get(Bytes.toBytes(rawReviews)
-      //val get = new Get(Bytes.toBytes("row-key"))
-      //val new_collection = collection.map(x => x * x )
 
 
-      // TODO: implement logic here
-      val result = ds
+      val customers = rawReviews.mapPartitions(partition => {
+
+        val conf = HBaseConfiguration.create()
+        conf.set("hbase.zookeeper.quorum", "cdh01.hourswith.expert:2181,cdh02.hourswith.expert:2181,cdh03.hourswith.expert:20181")
+        val connection = ConnectionFactory.createConnection(conf)
+        val table = connection.getTable(TableName.valueOf("slashley:users"))
+
+        val iter = partition.map(id => {
+          val get = new Get(id).addFamily("f1")
+          val result = table.get(get)
+
+        (id, Bytes.toString(result.getValue("f1", "mail")))
+      }).toList.iterator
+
+      connection.close()
+
+      iter
+    })
 
       // Write output to console
-      val query = result.writeStream
+      val query = customers.writeStream
         .outputMode(OutputMode.Append())
         .format("console")
         .option("truncate", false)
