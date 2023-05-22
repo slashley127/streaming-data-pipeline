@@ -113,6 +113,9 @@ object StreamingPipeline {
           val get = new Get(Bytes.toBytes(review.customer_id)).addFamily(Bytes.toBytes("f1"))
           val result = table.get(get)
 
+          //need user data?
+          //val userDataVariable = Bytes.toString(result.getValue(Bytes.toBytes("f1"), Bytes.toBytes("userDataVariable"))
+
           (Bytes.toBytes(review.customer_id), Bytes.toString(result.getValue(Bytes.toBytes("f1"), Bytes.toBytes("mail"))))
       }).toList.iterator
 
